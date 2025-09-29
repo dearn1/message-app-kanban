@@ -8,5 +8,12 @@
       <jdbc-url>jdbc:postgresql://ep-delicate-morning-adkhchcw-pooler.c-2.us-east-1.aws.neon.tech:5432/neondb</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
     </data-source>
+    <data-source source="LOCAL" name="message_app-db" uuid="b102d5f9-a66a-4c12-9166-925b8d668cbf">
+      <driver-ref>postgresql</driver-ref>
+      <synchronize>true</synchronize>
+      <jdbc-driver>org.postgresql.Driver</jdbc-driver>
+      <jdbc-url>jdbc:postgresql://ep-delicate-morning-adkhchcw-pooler.c-2.us-east-1.aws.neon.tech:5432/postgres</jdbc-url>
+      <working-dir>$ProjectFileDir$</working-dir>
+    </data-source>
   </component>
 </project>
