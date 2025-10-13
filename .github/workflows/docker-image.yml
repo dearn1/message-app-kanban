@@ -7,23 +7,45 @@ on:
     branches: [ "main" ]
 
 jobs:
-
   test:
-    runs-on: ubuntu-latest
+    docker:
+      - image: cimg/python:3.10  # More CircleCI-friendly image
     steps:
-      - uses: actions/checkout@v4
-      - name: Build the Docker image
-        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
-      - name: Install package
-        run: pip install -r requirements.txt
-      - name: Test the code
-        run: python manage.py test
-
+      - checkout  
+      - run:
+          name: Install dependencies
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+          name: Run tests
+          command: |
+            . venv/bin/activate
+            python manage.py test
+ 
   build:
-
-    runs-on: ubuntu-latest
-
+    docker:
+      - image: cimg/python:3.10
     steps:
-    - uses: actions/checkout@v4
-    - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - checkout
+      - run:
+          name: Install dependencies
+          command: |
+            python -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+      - run:
+          name: Build / Run
+          command: |
+            . venv/bin/activate
+            python manage.py check  # Replace with `runserver` only if you are running locally
+ 
+workflows:
+  version: 2
+  build-and-test:
+    jobs:
+      - test
+      - build:
+          requires:
+            - test
