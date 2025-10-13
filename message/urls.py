@@ -1,6 +1,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 
+from message.views import send_message
 from message.viewsets import Chat_roomViewSet, MessageViewSet
 
 router = DefaultRouter()
@@ -10,4 +11,5 @@ router.register(r'message', MessageViewSet, basename='message')
 
 urlpatterns = [
     path('', include(router.urls)),
+    path('send_message/', send_message, name='send_message'),
 ]
