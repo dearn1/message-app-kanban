@@ -69,3 +69,13 @@ class LoginAPITest(APITestCase):
         response = self.client.post(self.url, {'username': 'testuser', 'password': 'wrongpass'})
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertNotIn('token', response.data)
+
+class LogoutAPITest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpass')
+        self.url = reverse('logout')
+
+    def test_logout_success(self):
+        self.client.login(username='testuser', password='testpass')
+        response = self.client.post(self.url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
