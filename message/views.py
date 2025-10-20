@@ -1,9 +1,11 @@
 from django.shortcuts import render
-from rest_framework import status
+from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
+from django.contrib.auth import logout
+from django.shortcuts import redirect
 
 from message.models import Message
 from message.serializers import MessageSerializer
@@ -26,3 +28,8 @@ class LoginView(ObtainAuthToken):
         response = super(LoginView, self).post(request, *args, **kwargs)
         token = Token.objects.get(key=response.data['token'])
         return Response({'token': token.key, 'user_id': token.user_id})
+
+class LogoutView(generics.GenericAPIView):
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        return Response(status=status.HTTP_200_OK)
