@@ -3,6 +3,7 @@ from rest_framework import status, generics
 from rest_framework.authtoken.models import Token
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.decorators import api_view
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth import logout
 from django.shortcuts import redirect
@@ -30,6 +31,7 @@ class LoginView(ObtainAuthToken):
         return Response({'token': token.key, 'user_id': token.user_id})
 
 class LogoutView(generics.GenericAPIView):
-    def post(self, request, *args, **kwargs):
-        logout(request)
-        return Response(status=status.HTTP_200_OK)
+    permission_classes = (IsAuthenticated,)
+    def post(self, request):
+        request.user.auth_token.delete()
+        return Response(status=200)
