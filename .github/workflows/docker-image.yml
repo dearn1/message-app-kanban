@@ -7,45 +7,59 @@ on:
     branches: [ "main" ]
 
 jobs:
+
   test:
-    docker:
-      - image: cimg/python:3.10  # More CircleCI-friendly image
+    runs-on: ubuntu-latest
     steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            python -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-      - run:
-          name: Run tests
-          command: |
-            . venv/bin/activate
-            python manage.py test
+      - uses: actions/checkout@v4
+      - name: Build the Docker image
+        run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+      - name: Install package
+        run: pip install -r requirements.txt
+      - name: Test the code
+        run: python manage.py test
 
   build:
-    docker:
-      - image: cimg/python:3.10
-    steps:
-      - checkout
-      - run:
-          name: Install dependencies
-          command: |
-            python -m venv venv
-            . venv/bin/activate
-            pip install -r requirements.txt
-      - run:
-          name: Build / Run
-          command: |
-            . venv/bin/activate
-            python manage.py check  # Replace with `runserver` only if you are running locally
 
-  workflows:
-    version: 2
-    build-and-test:
-      jobs:
-        - test
-        - build:
-            requires:
-              - test
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout (not strictly required for SSH-only deploy)
+        uses: actions/checkout@v4
+
+      - name: Install SSH key
+        run: |
+          echo "${{ secrets.EC2_KEY }}" > key.pem
+          chmod 600 key.pem
+          mkdir -p ~/.ssh
+          # Avoid host key prompt on first connect
+          printf "Host *\n\tStrictHostKeyChecking no\n" > ~/.ssh/config
+
+      - name: Deploy on EC2
+        run: | 
+          ssh -i key.pem ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} \
+          APP_DIR='${{ secrets.APP_DIR }}' REPO='${{ github.repository }}' 'bash -s' << 'EOSSH'
+            set -e
+      
+            if [ ! -d "$APP_DIR/.git" ]; then
+              mkdir -p "$APP_DIR"
+              git clone https://github.com/$REPO.git "$APP_DIR"
+            fi
+      
+            cd "$APP_DIR"
+            git fetch origin main
+            git reset --hard origin/main
+      
+            sudo docker compose build
+            sudo docker compose up -d --remove-orphans
+            sudo docker compose run --rm web python manage.py migrate --noinput || true
+            sudo docker compose ps
+          EOSSH
