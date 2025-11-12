@@ -35,6 +35,9 @@ jobs:
       - name: Checkout (not strictly required for SSH-only deploy)
         uses: actions/checkout@v4
 
+      - name: Fix git safe directory
+        run: git config --global --add safe.directory '*'
+
       - name: Install SSH key
         run: |
           echo "${{ secrets.EC2_KEY }}" > key.pem
