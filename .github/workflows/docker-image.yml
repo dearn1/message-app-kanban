@@ -51,15 +51,15 @@ jobs:
       
             if [ ! -d "$APP_DIR/.git" ]; then
               mkdir -p "$APP_DIR"
-              git clone https://github.com/$REPO.git "$APP_DIR"
+              sudo git clone https://github.com/$REPO.git "$APP_DIR"
             fi
 
             # Fix git safe directory on Azure-VM
-            git config --global --add safe.directory "$APP_DIR"
+            sudo git config --global --add safe.directory "$APP_DIR"
       
             cd "$APP_DIR"
-            git fetch origin main
-            git reset --hard origin/main
+            sudo git fetch origin main
+            sudo git reset --hard origin/main
       
             sudo docker compose build
             sudo docker compose up -d --remove-orphans
