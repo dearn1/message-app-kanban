@@ -4,6 +4,9 @@ from rest_framework import status
 from rest_framework.test import APITestCase
 from .models import Message, Chat_room
 
+# test_utils.py
+
+
 class SendMessageAPITest(APITestCase):
     def setUp(self):
         # Create test users
